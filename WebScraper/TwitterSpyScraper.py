@@ -11,15 +11,16 @@ from bs4 import BeautifulSoup as bs
 import re
 
 class TwitterSpy(object):
+	
 
-	def bootup(self):
+	def bootup(self,password):
 		
 		driver = webdriver.PhantomJS('/Users/dheepan.ramanan/Documents/Resources/phantomjs-2.1.1-macosx/bin/phantomjs')
 		driver.get("https://app.engagor.com/admin/")
 		username = driver.find_element_by_xpath('//*[@id="emailInput"]')
 		username.send_keys("dheepan.ramanan@clarabridge.com")
 		password = driver.find_element_by_xpath('//*[@id="passwordInput"]')
-		password.send_keys("q88SYHa1$&YJ")
+		password.send_keys()
 		
 		loginbutton = driver.find_element_by_xpath('//*[@id="loginButton"]')
 		loginbutton.click()
