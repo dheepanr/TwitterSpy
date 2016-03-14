@@ -9,6 +9,7 @@ from selenium import webdriver
 import time
 from bs4 import BeautifulSoup as bs
 import re
+import numpy as np
 
 class TwitterSpy(object):
 	def __init(self, twitterID):
@@ -203,7 +204,7 @@ def loopScrape(driver, key, twitterID):
 		statsDict['withinHour'] = withinHour
 		
 		twitterApp = b.findAll('tbody')
-		statsDict['twitterApp'] = twitterApp
+		statsDict['twitterApp'] = appTable(twitterApp)
 		return statsDict
 		
 	except AttributeError:
@@ -228,7 +229,31 @@ def loopScrape(driver, key, twitterID):
 		statsDict['withinHour'] = withinHour
 		
 		twitterApp = b.findAll('tbody')
-		statsDict['twitterApp'] = twitterApp
+		statsDict['twitterApp'] = appTable(twitterApp)
+		names = ['id','data']
+		formats = ['object','f8']
+		dtype = dict(names = names, formats=formats)
+		topApps = np.array(appTable(twitterApp).items(), dtype=dtype)
+		topAppsSorted = np.sort(topApps, order=['data'])[::-1].tolist()
+		
+		statsDict['NumberOneApp'] = topAppsSorted[0][0]
+		statsDict['NumerOneAppUsage'] = topAppsSorted[0][1]
+		
+		if len(topAppsSorted) > 1:
+			statsDict['NumberTwoApp'] = topAppsSorted[1][0]
+			statsDict['NumerTwoAppUsage'] = topAppsSorted[1][1]
+		else:
+			statsDict['NumberTwoApp'] = ''
+			statsDict['NumerTwoAppUsage'] = ''
+			
+		if len(topAppsSorted) > 2:
+			statsDict['NumberThreeApp'] = topAppsSorted[2][0]
+			statsDict['NumerTwoThreeUsage'] = topAppsSorted[2][1]
+		else:
+			statsDict['NumberThreeApp'] = ''
+			statsDict['NumerTwoThreeUsage'] = ''
+		
+		 
 		time.sleep(2)
 		
 		return statsDict
@@ -282,7 +307,7 @@ def appTable(bs4list):
 	nums = []
 	tds = bs4list[1].findAll('td')
 	for td in tds:
-			if re.search(r'\d',td.text):
+			if re.search(r'\W\d',td.text):
 				num = int(re.search(r'(.*)(\(\d.*\))',td.text).group(1).replace('\n','').replace(' ',''))
 				nums.append(num)
 	appVal = dict(zip(twitterApps,nums))
